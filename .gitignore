@@ -1,0 +1,17 @@
+.DS_Store
+.env
+.env.local
+.env.*.local
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+backend/.venv/
+backend/data/*
+!backend/data/.gitkeep
+frontend/.next/
+frontend/node_modules/
+frontend/pnpm-lock.yaml
+frontend/yarn.lock
+*.tsbuildinfo
