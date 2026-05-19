@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Verify backend
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r backend/requirements.txt
+          cd backend && python -m pytest
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run lint
+          npm run typecheck
+          npm run build
+      - name: Prepare release bundle
+        run: |
+          mkdir -p release
+          git archive --format=tar.gz --prefix=auto-startup-local-console/ HEAD > release/auto-startup-local-console-source.tar.gz
+          tar -czf release/auto-startup-local-console-frontend-next.tar.gz -C frontend .next package.json package-lock.json
+          cd release
+          sha256sum * > SHA256SUMS
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: release/*
+          generate_release_notes: true
+
